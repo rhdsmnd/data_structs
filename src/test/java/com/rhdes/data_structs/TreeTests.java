@@ -69,7 +69,9 @@ public class TreeTests {
 		assertNull(child1.getParent());
 		assertNull(root.getChild(0));
 
+		
 		root.deleteChild(child2);
+
 		assertNull(child2.getParent());
 		assertNull(root.getChild(1));
 		assertEquals(0, root.numChildren());
@@ -153,25 +155,45 @@ public class TreeTests {
 		assertTrue(root.findDescendant(child6));
 		assertTrue(root.findDescendant(child3));
 		assertFalse(root.findDescendant(eqChild6));
-
+		
 		root.deleteChild(0);
 		eqRoot.deleteChild(0);
-
-		OrderedTree<String> swapChild = new OrderedTree<String>(2, "root");
-		swapChild.setChild(0, child2);
-		swapChild.setChild(1, child1);
-
-		assertTrue(!root.isEqual(swapChild));
-
-		swapChild.deleteChild(1);
-		swapChild.setChild(0, child1);
-
-		assertTrue(!root.isEqual(swapChild));
 
 		eqChild2.deleteChild(0);
 		child2.deleteChild(0);
 
 		assertTrue(root.isEqual(eqRoot));
+	}
+	
+	@Test
+	public void orderedSwapChildTest() {
+		OrderedTree<Integer> root = new OrderedTree<Integer>(2, 1);
+		OrderedTree<Integer> swapChild = new OrderedTree<Integer>(2, 1);
+		
+		OrderedTree<Integer> child1 = new OrderedTree<Integer>(2, 2);
+		OrderedTree<Integer> child2 = new OrderedTree<Integer>(2, 3);
+		
+		OrderedTree<Integer> eq1 = new OrderedTree<Integer>(2, 2);
+		OrderedTree<Integer> eq2 = new OrderedTree<Integer>(2, 3);
+		
+		root.setChild(0, child1);
+		root.setChild(1, child2);
+		
+		swapChild.setChild(0, eq2);
+		swapChild.setChild(1, eq1);
+		
+		
+		assertFalse(root.equals(swapChild));
+		
+		swapChild.deleteChild(1);
+		
+		assertFalse(root.equals(swapChild));
+		
+		swapChild.setChild(1, eq2);
+		
+		assertFalse(root.equals(swapChild));
+		
+		return;
 	}
 
 

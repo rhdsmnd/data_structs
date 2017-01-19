@@ -79,8 +79,6 @@ public class BST<T> extends BinTree<T> implements SearchTree<T> {
 		return false;
 	}
 	
-	protected 
-	
-	T leftLimit;
-	T rightLimit;
+	protected T leftLimit;
+	protected T rightLimit;
 }

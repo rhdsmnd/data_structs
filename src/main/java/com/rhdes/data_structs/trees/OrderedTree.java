@@ -13,12 +13,24 @@ public class OrderedTree<T> extends Tree<T> {
 			children[i] = null;
 		}
 		this.numChildren = 0;
+		this.parentIndex = -1;
 	}
 
 	@Override
 	public int numChildren() {
+		// refactor later: (tally instead of array loop)
 		// Keeping a tally is much faster than iterating over array
-		return this.numChildren;
+		// return this.numChildren;
+		
+		
+		
+		int count = 0;
+		for (int i = 0; i < children.length; i += 1) {
+			if (children[i] != null) {
+				count += 1;
+			}
+		}
+		return count;
 	}
 
 	// move code later to after Tree methods
@@ -50,12 +62,23 @@ public class OrderedTree<T> extends Tree<T> {
 	public void deleteChild(int index) {
 		if (isValidIndex(index) && children[index] != null) {
 			((OrderedTree<T>) children[index]).setParent(null);
-			children[index] = null;
-			this.numChildren -= 1;
+			this._delChild(index);
 		} else {
 			throw new TreeException("Invalid index for deleteChild.");
 		}
+	}
+	
+	protected void _delChild(int index) {
+		if (this.getChild(index) == null) {
+			return;
+		}
 		
+		OrderedTree<T> child = (OrderedTree<T>) this.children[index];
+		child.parent = null;
+		child.parentIndex = -1;
+		
+		this.children[index] = null;
+		this.numChildren -= 1;
 		
 	}
 
@@ -64,34 +87,64 @@ public class OrderedTree<T> extends Tree<T> {
 			throw new TreeException("Invalid index for setChild.");
 		}
 		if (children[index] != null) {
-			Tree<T> curChild = (Tree<T>) children[index];
-			curChild.setParent(null);
-			children[index] = null;
+			this._delChild(index);
 		}
 		if (newChild != null
 					&& this.getClass().equals(newChild.getClass())
 					&& this.maxChildren == newChild.maxChildren()) {
-			
 			children[index] = newChild;
 			this.numChildren += 1;
-			newChild.setParent(this);
+			
+			((OrderedTree<T>) newChild).setParent((OrderedTree<T>) this, index);
+			
 		}
 	}
 	
-	public void setParent(Tree<T> parent, int parentIndex) {
-		if (parent == null && this.parent != null) {
-			this.parent.deleteChild(this);
+	@Override
+	public void setParent(Tree<T> newParent) {
+		if (newParent != null && !this.matchesTreeType(newParent)) {
+			throw new TreeException("Parent and child tree types are different.");
+		}
+		this.setParent((OrderedTree<T>) newParent, -1);
+	}
+	
+	public void setParent(OrderedTree<T> newParent, int parentIndex) {
+		OrderedTree<T> oldParent = (OrderedTree<T>) this.parent;
+		
+		if (oldParent != null && newParent == null) {
+			((OrderedTree<T>) oldParent)._delChild(this.parentIndex);
+			this.parent = null;
+			this.parentIndex = -1;
 			return;
 		}
-		if (!isValidIndex(parentIndex) && parentIndex != -1) {
+		
+		
+		if (!this.matchesTreeType(newParent)) {
+			throw new TreeException("Parent and child tree types are different.");
+		} else if (parentIndex == -1) {
+			parentIndex = newParent.firstFree();
+		} else if (!isValidIndex(parentIndex)) {
 			// make common string for all invalid index errors?
 			throw new TreeException("Attempted to set invalid index");
-		} else if (!this.matchesTreeType(parent)) {
-			throw new TreeException("Parent and child tree types are different.");
 		}
 		
 		// set child's parent to be PARENT, and have child be at index PARENTINDEX in the parent tree
-		this.parent = parent;
+		if (parentIndex == -1) {
+			throw new TreeException("Cannot set parent: parent tree is full.");
+		} else if (newParent.getChild(parentIndex) != null
+						&& newParent.getChild(parentIndex) != this) {
+			throw new TreeException("Cannot set parent: another child already exists at index "
+										+ parentIndex + " in parent.");
+		}
+
+		if (oldParent != null) {
+			((OrderedTree<T>) oldParent)._delChild(this.parentIndex);
+		}
+		
+		newParent.children[parentIndex] = this;
+		this.parentIndex = parentIndex;
+		this.parent = newParent;
+
 	}
 
 	//@Override
@@ -199,6 +252,21 @@ public class OrderedTree<T> extends Tree<T> {
 		return index >= 0 && index < this.maxChildren();
 	}
 	
+	
+	// remove later; keep track of first free index separately
+	// and make it a constant time operation, instead of 
+	// looping through the children array each time
+	protected int firstFree() {
+		for (int i = 0; i < numChildren; i += 1) {
+			if (children[i] == null) {
+				return i;
+			}
+		}
+		
+		return -1;
+	}
+	
+	protected int parentIndex;
 	protected int numChildren;
 	protected final Object[] children;
 }
