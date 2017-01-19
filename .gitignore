@@ -1,4 +1,5 @@
 /target/
 *.jar
 *.class
-.DS_STORE
+.DS_Store
+*.swp
