@@ -9,9 +9,7 @@ public class Queue<T> {
 
 	private static final int RESIZE_RATIO = 2;
 
-	private enum Resize {
-		LARGER, SMALLER
-	}
+
 
 	public Queue() {
 		this(Integer.MAX_VALUE);

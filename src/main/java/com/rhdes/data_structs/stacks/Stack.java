@@ -4,7 +4,7 @@ import java.util.Arrays;
 
 public class Stack<T> {
 
-	private static final int DEFAULT_SIZE = 8;
+	private static final int DEFAULT_SIZE = 16;
 	private static final int DEALLOC_THRESHOLD = 128;
 
 	private static final int RESIZE_RATIO = 2;
@@ -14,9 +14,8 @@ public class Stack<T> {
 	}
 
 	public Stack(int maxSize) {
-		if (maxSize < 0) {
-			// exception
-			this.maxSize = 0;
+		if (maxSize < 1) {
+			throw new IllegalArgumentException("Maximum size must be a positive number");
 		} else {
 			this.maxSize = maxSize;
 		}
@@ -36,6 +35,10 @@ public class Stack<T> {
 		} else {
 			return null;
 		}
+	}
+
+	private void resizeSmaller() {
+
 	}
 
 	public boolean push(T value) {
